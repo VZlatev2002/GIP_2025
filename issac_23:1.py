@@ -15,7 +15,7 @@ from scipy.integrate import cumtrapz, solve_ivp
 kappa = 5e-7  # Road roughness coefficient (m^3/cycle)
 V = 25        # Vehicle speed (m/s)
 Fs = 1000    # Sampling frequency (Hz)
-T = 10       # Simulation time (seconds)
+T = 100       # Simulation time (seconds)
 N = int(Fs * T)  # Number of samples
 dt = 1 / Fs   # Time step
 
@@ -28,7 +28,7 @@ S_dot_xr = 2 * np.pi * kappa * V  # Constant value for all frequencies
 
 # Generate Gaussian white noise in frequency domain
 random_phase = np.exp(1j * 2 * np.pi * np.random.rand(len(f)))
-amplitude = 10 # Scale by power spectrum
+amplitude = np.sqrt(S_dot_xr * Fs / 2)  # Scale by power spectrum
 white_noise_freq = amplitude * random_phase
 
 # Mirror spectrum for negative frequencies
@@ -108,6 +108,7 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
 
 from scipy.fft import fft, fftfreq
 
