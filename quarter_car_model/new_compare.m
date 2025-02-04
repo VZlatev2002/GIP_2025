@@ -52,7 +52,23 @@ function [J1] = cost(time,acc_data)
     J1 = sqrt(mean(filtered_acceleration.^2)); % Calculate RMS acceleration
 end
 
+% Function to find two peak values: one below 4Hz and one above 4Hz
+function [peak_low, peak_high] = find_two_peaks(f, amplitude)
+    % Split frequency range into below 4Hz and above 4Hz
+    idx_low = f < 4;
+    idx_high = f >= 4;
+    
+    % Find the maximum peak in each region
+    [peak_low, idx1] = max(amplitude(idx_low));  
+    [peak_high, idx2] = max(amplitude(idx_high));
 
+    % Get corresponding frequencies
+    freq_low = f(idx_low);
+    freq_high = f(idx_high);
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load datasets
 [L0_time, L0_acc] = load_acceleration_data('L0acc_data100s.mat');
@@ -89,12 +105,36 @@ fprintf('J1 (NL1 Model): %.6f m/s^2\n', J1_NL1);
 fprintf('Improvement in J1 (L1 vs L0): %.2f%%\n', J1_L1_improvement);
 fprintf('Improvement in J1 (NL0 vs L0): %.2f%%\n', J1_NL0_improvement);
 fprintf('Improvement in J1 (NL1 vs L0): %.2f%%\n', J1_NL1_improvement);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Plot Acceleration vs Frequency for all models
 plot_acceleration_spectrum(f, amplitude_L0, amplitude_L1, amplitude_NL0,amplitude_NL1);
 
+% Find two peak values for each model
+[peak_L0_low, peak_L0_high] = find_two_peaks(f, amplitude_L0);
+[peak_L1_low, peak_L1_high] = find_two_peaks(f, amplitude_L1);
+[peak_NL0_low, peak_NL0_high] = find_two_peaks(f, amplitude_NL0);
+[peak_NL1_low, peak_NL1_high] = find_two_peaks(f, amplitude_NL1);
 
+% Compute percentage improvement in peaks relative to L0
+peak_L1_improvement_low = ((peak_L0_low - peak_L1_low) / peak_L0_low) * 100;
+peak_L1_improvement_high = ((peak_L0_high - peak_L1_high) / peak_L0_high) * 100;
+peak_NL0_improvement_low = ((peak_L0_low - peak_NL0_low) / peak_L0_low) * 100;
+peak_NL0_improvement_high = ((peak_L0_high - peak_NL0_high) / peak_L0_high) * 100;
+peak_NL1_improvement_low = ((peak_L0_low - peak_NL1_low) / peak_L0_low) * 100;
+peak_NL1_improvement_high = ((peak_L0_high - peak_NL1_high) / peak_L0_high) * 100;
 
+% Print peak values and improvements
+fprintf('\nPeak Analysis:\n');
+fprintf('L0 Peaks: Low: %.6f, High: %.6f\n', peak_L0_low, peak_L0_high);
+fprintf('L1 Peaks: Low: %.6f (%.2f%%), High: %.6f (%.2f%%)\n', ...
+    peak_L1_low, peak_L1_improvement_low, peak_L1_high, peak_L1_improvement_high);
+fprintf('NL0 Peaks: Low: %.6f (%.2f%%), High: %.6f (%.2f%%)\n', ...
+    peak_NL0_low, peak_NL0_improvement_low, peak_NL0_high, peak_NL0_improvement_high);
+fprintf('NL1 Peaks: Low: %.6f (%.2f%%), High: %.6f (%.2f%%)\n', ...
+    peak_NL1_low, peak_NL1_improvement_low, peak_NL1_high, peak_NL1_improvement_high);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 load("NL1_middle_v.mat",'middle_v')
 load("NL1_Ms_v.mat",'Ms_v')
