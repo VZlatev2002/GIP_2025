@@ -6,7 +6,7 @@ load("VDDNL0_a.mat","Ms_acc")
 time = Ms_acc.Time;
 acc_data = Ms_acc.Data;
 
-% load("NL1_H_100s.mat","H2631")
+% load("NL1_H_100s.mat","H2631") H is the Jr
 load("VDDNL0_H.mat","H2631")
 H2631 = H2631.Data;
 RMS= rms(H2631);
