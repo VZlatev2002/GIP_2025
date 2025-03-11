@@ -1,0 +1,37 @@
+component inerter
+% Translational Inerter
+% The block represents an ideal mechanical translational inerter. Force is
+% proportional to the rate of change of the relative velocity across the
+% ports.
+%
+% Connections R and C are mechanical translational conserving ports, 
+% with R representing the inerter rod, while C is associated with the
+% inerter case. The block positive direction is from port R to port C. 
+
+% Copyright 2005-2016 The MathWorks, Inc.
+
+nodes
+    R = foundation.mechanical.translational.translational; % R:left
+    C = foundation.mechanical.translational.translational; % C:right
+end
+
+parameters
+    B = { 1, 'kg'};    % Inertance
+end
+
+variables
+    v = { value = { 0, 'm/s' }, priority = priority.high }; % Velocity
+    f = { 0, 'N' };                                         % Force
+end
+
+branches
+    f : R.f -> C.f;
+end
+
+equations
+    assert(B>0)
+    v == R.v - C.v;
+    f == B*v.der;
+end
+
+end
