@@ -32,7 +32,7 @@ function NL0_optimise()
                         "NL0/orifice2", "restriction_area"];
     model_name = 'NL0';
     f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-4);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
@@ -48,7 +48,27 @@ function L0_optimise()
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
+function L0_optimise_mechanical()
+    lower_bounds = [280];
+    upper_bounds = [8000];
+    initial_guess = [4000];
+    parameter_names = ["L0_mechanical/damper", 'D'];
+    model_name = 'L0_mechanical';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
 
+function NL0_optimise_mechanical()
+    lower_bounds = [0, 0];
+    upper_bounds = [8000, 8000];
+    initial_guess = [4000, 30];
+    parameter_names = ["NL0_mechanical/c_max", 'constant';
+                        "NL0_mechanical/c_min", 'constant'];
+    model_name = 'NL0_mechanical';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
 
-
-L0_optimise
+NL0_optimise

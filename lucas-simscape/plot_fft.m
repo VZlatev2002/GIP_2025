@@ -1,49 +1,3 @@
-clear all
-
-
-% load("NL1_a_100s.mat", 'Ms_acc');
-load("a.mat","ans")
-time = ans.Time;
-acc_data = ans.Data;
-
-
-% % load("NL1_H_100s.mat","H2631") H is the Jr
-% load("VDDNL0_H.mat","H2631")
-% H2631 = H2631.Data;
-% RMS= rms(H2631);
-% fprintf('Jr Value from Simulink Model: %.10f m/s^2\n', RMS);
-
-
-%your_acceleration_data = [time, acc_data]; % Replace with your data
-
-% Simulation Parameters
-STEP_SIMULATION = 0.0001; % Time step
-STEP_FREQUENCY = 0.1;   % Frequency resolution
-t1 = 0;  % Start time for FFT
-t2 = 100; % End time for FFT
-
-tsimnew=[time(1):STEP_SIMULATION:time(end)]'; % to make a constant time step
-msanew=interp1(time,acc_data,tsimnew); 
-
-your_acceleration_data = [tsimnew,msanew];
-
-% Process primary and secondary ride frequency ranges
-FFT_primary = FFT_JLR1(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
-FFT_secondary = FFT_JLR2(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
-
-
-FFT_msa_k(:,:)=FFT_primary;
-
-Lm1=length(FFT_primary);
-Lm2=length(FFT_secondary);
-FFT_msa_k(Lm1+1:Lm1+Lm2,1:2)=FFT_secondary;
-
-figure;
-% Plot the FFT result
-%plot(FFT_result(:,1), FFT_result(:,2), 'LineWidth', 2);
-plot(FFT_msa_k(:,1),FFT_msa_k(:,2),'LineWidth',2);hold on;
-
-
 function result = FFT_JLR1(a_sprung_ratley,STEP_SIMULATION,STEP_FREQUENCY,t1,t2)
 
 [~,index_10s]=min(abs(a_sprung_ratley(:,1)-t1));
@@ -83,3 +37,71 @@ f_range2 = [1.501:STEP_FREQUENCY:20];
 rmsDensity2 = SxxWelch2.^0.5;
 result=[f2' rmsDensity2'];
 end
+
+function result = findFFT(model_name)
+
+    % load("NL1_a_100s.mat", 'Ms_acc');
+    simOut = sim(model_name);
+    load("a.mat","ans");
+    time = ans.Time;
+    acc_data = ans.Data;
+    
+    
+    % % load("NL1_H_100s.mat","H2631") H is the Jr
+    % load("VDDNL0_H.mat","H2631")
+    % H2631 = H2631.Data;
+    % RMS= rms(H2631);
+    % fprintf('Jr Value from Simulink Model: %.10f m/s^2\n', RMS);
+
+    % Simulation Parameters
+    STEP_SIMULATION = 0.0001; % Time step
+    STEP_FREQUENCY = 0.1;   % Frequency resolution
+    t1 = 0;  % Start time for FFT
+    t2 = 100; % End time for FFT
+    
+    tsimnew=[time(1):STEP_SIMULATION:time(end)]'; % to make a constant time step
+    msanew=interp1(time,acc_data,tsimnew); 
+    
+    filtered_acceleration = lsim(tf([50 500], [1, 50, 1200]), msanew, tsimnew);
+    
+    RMS = rms(filtered_acceleration);
+
+    fprintf('Jr Value from Simulink Model (%s): %.2f m/s^2\n', model_name, RMS);
+    your_acceleration_data = [tsimnew,msanew];
+    
+    % Process primary and secondary ride frequency ranges
+    FFT_primary = FFT_JLR1(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
+    FFT_secondary = FFT_JLR2(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
+    
+    
+    FFT_msa_k(:,:)=FFT_primary;
+    
+    Lm1=length(FFT_primary);
+    Lm2=length(FFT_secondary);
+    FFT_msa_k(Lm1+1:Lm1+Lm2,1:2)=FFT_secondary;
+    result = FFT_msa_k;
+
+end
+
+
+clear all
+
+resultL0 = findFFT('L0.slx');
+resultL0_mechanical = findFFT('L0_mechanical.slx');
+
+resultNL0 = findFFT('NL0.slx');
+resultNL0_mechanical = findFFT('NL0_mechanical.slx');
+
+% Plot the FFT result
+figure(1);
+plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'red'); hold on;
+plot(resultL0_mechanical(:,1),resultL0_mechanical(:,2),'LineWidth',2, 'Color', 'magenta'); hold on;
+legend('L0 Hydraulic', 'L0 Mechanical')
+hold off;
+
+
+figure(2);
+plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color', 'blue');hold on;
+plot(resultNL0_mechanical(:,1),resultNL0_mechanical(:,2),'LineWidth',2, 'Color', 'green'); hold on;
+legend('NL0 Hydraulic', 'NL0 Mechanical')
+hold off;
