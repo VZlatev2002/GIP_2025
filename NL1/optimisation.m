@@ -48,20 +48,7 @@ function L0_optimise()
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
-%NL1 optimisation
-function NL1_optimise()
-    lower_bounds = [0.79, 0.79,10,0.1];
-    upper_bounds = [30, 100,50000,10];
-    initial_guess = [4, 80,10000,5];
-    parameter_names = ["NL1_1/orifice1", "restriction_area";
-                        "NL1_1/orifice2", "restriction_area";
-                        "NL1_1/Translational Spring2" , "spr_rate";
-                        "NL1_1/Pipe (IL)1","length"];
-    model_name = 'NL1_1';
-    f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-4);
-    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
-end
+
 
 %NL0 optimisation
 function L1_optimise()
@@ -77,6 +64,19 @@ function L1_optimise()
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
+%NL1 optimisation
+function NL1_optimise()
+    lower_bounds = [0.79, 0.79,100,0.01];
+    upper_bounds = [15, 50,50000,5];
+    initial_guess = [5, 15,20000, 1];
+    parameter_names = ["NL1/orifice1", "restriction_area";
+                        "NL1/orifice2", "restriction_area";
+                        "NL1/spring" , "spr_rate";
+                        "NL1/pipe","length"];
+    model_name = 'NL1';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-4);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
 
-
-L1_optimise
+NL1_optimise
