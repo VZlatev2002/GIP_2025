@@ -49,7 +49,6 @@ optimal_Kmin = optimal_params(2);
 optimal_c = optimal_params(3);
 optimal_b = optimal_params(4);
 
-Display results
 fprintf('\nOptimal Kmax: %.2f N/m\n', optimal_Kmax);
 fprintf('Optimal Kmin: %.2f N/m\n', optimal_Kmin);
 fprintf('Optimal damping: %.2f Ns/m\n', optimal_c);
