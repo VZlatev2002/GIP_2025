@@ -87,21 +87,32 @@ end
 clear all
 
 resultL0 = findFFT('L0.slx');
-resultL0_mechanical = findFFT('L0_mechanical.slx');
+%resultL0_mechanical = findFFT('L0_mechanical.slx');
 
 resultNL0 = findFFT('NL0.slx');
-resultNL0_mechanical = findFFT('NL0_mechanical.slx');
+%resultNL0_mechanical = findFFT('NL0_mechanical.slx');
 
-% Plot the FFT result
-figure(1);
-plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'red'); hold on;
-plot(resultL0_mechanical(:,1),resultL0_mechanical(:,2),'LineWidth',2, 'Color', 'magenta'); hold on;
-legend('L0 Hydraulic', 'L0 Mechanical')
-hold off;
+resultL1 = findFFT('L1.slx');
+resultNL1 = findFFT('NL1.slx');
+% 
+% % Plot the FFT result
+% figure(1);
+% plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'red'); hold on;
+% plot(resultL0_mechanical(:,1),resultL0_mechanical(:,2),'LineWidth',2, 'Color', 'magenta'); hold on;
+% legend('L0 Hydraulic', 'L0 Mechanical');
+% hold off;
+% 
+% 
+% figure(2);
+% plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color', 'blue');hold on;
+% plot(resultNL0_mechanical(:,1),resultNL0_mechanical(:,2),'LineWidth',2, 'Color', 'green'); hold on;
+% legend('NL0 Hydraulic', 'NL0 Mechanical');
+% hold off;
 
-
-figure(2);
-plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color', 'blue');hold on;
-plot(resultNL0_mechanical(:,1),resultNL0_mechanical(:,2),'LineWidth',2, 'Color', 'green'); hold on;
-legend('NL0 Hydraulic', 'NL0 Mechanical')
+figure(3);
+plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
+plot(resultL1(:,1),resultL1(:,2),'LineWidth',2, 'Color', "#D95319"); hold on;
+plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color','red' );hold on;
+plot(resultNL1(:,1),resultNL1(:,2),'LineWidth',2, 'Color', 'black' ); hold on;
+legend('L0 Hydraulic', 'NL0 Hydraulic', 'L1 Hydraulic', 'NL1 Hydraulic');
 hold off;
