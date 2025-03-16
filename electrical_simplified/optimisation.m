@@ -1,54 +1,56 @@
+clear all;
 
-function cost = computeRMS(parameter_vals, parameter_names, model_name)
+% Define the objective function
+function cost = computeRMS(parameters)
+    % Extract optimization variables
+    R_A = parameters(1);  % Low resistance state (ON)
+    R_B = parameters(2);  % High resistance state (OFF)
 
-    for n = 1:height(parameter_names)
-        set_param(parameter_names(n,1), parameter_names(n,2), num2str(parameter_vals(n)));
-    end
+    % Update parameters in Simulink (Memristor resistance values)
+    set_param('new_electrical/memristor', 'Ra', num2str(R_A)); 
+    set_param('new_electrical/memristor', 'Rb', num2str(R_B));
 
-    simOut = sim(model_name);
-    time_interp = linspace(0, simOut.acceleration.Time(end), 10000);
-    
-    acceleration_interp = interp1(simOut.acceleration.Time, simOut.acceleration.Data, time_interp);
-    
-    %filtered_acceleration = lsim(tf([50 500], [1, 50, 1200]), acceleration_interp, time_interp);
-    
-    cost = rms(acceleration_interp);
-    for n = 1:height(parameter_names)
-        text = join([parameter_names(n,1),": ", num2str(parameter_vals(n))]);
-        disp(text)
-    end
-    text = join(["RMS :", cost]);
-    disp(text)
-    disp(' ')
-    
+    % Run the simulation
+    simOut = sim('new_electrical.slx');
+
+    % Extract Jr acceleration data from the simulation output
+    load("electrical_simplified/h.mat", "H2631");
+    H2631 = H2631.Data; % Extract acceleration data
+
+    % Compute RMS of the filtered acceleration
+    cost = rms(H2631); % Calculate RMS acceleration (Jr metric)
+
+    % Print current values for tracking
+    fprintf('R_A: %.2f Ω, R_B: %.2f Ω, RMS: %.10f\n', R_A, R_B, cost);
 end
 
-%NL0 optimisation
-function NL0_optimise()
-    lower_bounds = [0.79, 0.79];
-    upper_bounds = [30, 100];
-    initial_guess = [4, 80];
-    parameter_names = ["NL0/orifice1", "restriction_area";
-                        "NL0/orifice2", "restriction_area"];
-    model_name = 'NL0';
-    f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-4);
-    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
-end
+% Define bounds for the parameters
+lower_bounds = [10, 1];      % [Min resistance (Ω), Max resistance (Ω)]
+upper_bounds = [100, 10];   % [Min resistance (Ω), Max resistance (Ω)]
 
+% Initial guess for the parameters
+initial_guess = [50, 5];  % [R_A (low), R_B (high)]
 
-function L0_optimise()
-    lower_bounds = [0.79];
-    upper_bounds = [30];
-    initial_guess = [20];
-    parameter_names = ["L0/orifice1", "restriction_area"];
-    model_name = 'L0';
-    f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
-    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
-end
+% Set optimization options
+options = optimoptions('patternsearch', 'Display', 'iter', ...
+    'UseCompletePoll', true, 'UseCompleteSearch', true, ...
+    'PollMethod', 'GPSPositiveBasis2N', 'MeshTolerance', 1e-3);
 
+% Run the optimization using pattern search
+[optimal_params, optimal_rms] = patternsearch(@computeRMS, initial_guess, [], [], [], [], ...
+                                              lower_bounds, upper_bounds, [], options);
 
+% Extract optimized values
+optimal_R_A = optimal_params(1);
+optimal_R_B = optimal_params(2);
 
+% Display results
+fprintf('\n====== Optimal Parameters for new_electrical ======\n');
+fprintf('Optimal R_A: %.2f Ω\n', optimal_R_A);
+fprintf('Optimal R_B: %.2f Ω\n', optimal_R_B);
+fprintf('Minimum RMS Acceleration: %.10f m/s^2\n', optimal_rms);
+fprintf('===================================================\n');
 
-L0_optimise
+% Update the Simulink model with the optimized values
+set_param('new_electrical/memristor', 'Ra', num2str(optimal_R_A));
+set_param('new_electrical/memristor', 'Rb', num2str(optimal_R_B));

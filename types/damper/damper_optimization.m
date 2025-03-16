@@ -28,11 +28,11 @@ function cost = computeRMS(parameters)
 end
 
 % Define bounds for the parameters
-lower_bounds = [1, 0.1, 1, 0.1];   % [Cmax, Cmin, Spring stiffness, Inerter]
-upper_bounds = [100000, 10000, 5000, 50]; % [Cmax, Cmin, Spring stiffness, Inerter]
+lower_bounds = [700, 70, 1, 1];   % [Cmax, Cmin, Spring stiffness, Inerter]
+upper_bounds = [1000, 1000, 20000, 50]; % [Cmax, Cmin, Spring stiffness, Inerter]
 
 % Initial guess for the parameters
-initial_guess = [20000, 5000, 500, 5]; % [Cmax, Cmin, Spring stiffness, Inerter]
+initial_guess = [20000, 5000, 15000, 10]; % [Cmax, Cmin, Spring stiffness, Inerter]
 
 % Set optimization options
 options = optimoptions('patternsearch', 'Display', 'iter', ...
@@ -56,7 +56,7 @@ fprintf('Optimal Inerter: %.2f kg\n', optimal_b);
 fprintf('Minimum RMS Acceleration: %.6f m/s^2\n', optimal_rms);
 
 % Update the Simulink model with the optimized values
-set_param('NEW_KL3_NEW/VDS/KL3 Kmax', 'Gain', num2str(optimal_Kmax));
-set_param('NEW_KL3_NEW/VDS/KL3 Kmin', 'Gain', num2str(optimal_Kmin));
-set_param('NEW_KL3_NEW/KL3 (damper)', 'D', num2str(optimal_c));
-set_param('NEW_KL3_NEW/KL3 (inerter)', 'B', num2str(optimal_b));
+set_param('damper_model/VDD/Kmax', 'Gain', num2str(optimal_Kmax));
+set_param('damper_model/VDD/Kmax', 'Gain', num2str(optimal_Kmin));
+set_param('damper_model/KL3_spring', 'spr_rate', num2str(optimal_c));
+set_param('damper_model/KL3_inerter', 'B', num2str(optimal_b));

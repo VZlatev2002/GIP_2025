@@ -92,5 +92,5 @@ resultNL0 = findFFT('new_electrical.slx');
 
 figure(2);
 plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color', 'blue');hold on;
-legend('NL0 Hydraulic', 'NL0 Mechanical')
+legend('NL1 Electrical', 'NL1 Electrical')
 hold off;

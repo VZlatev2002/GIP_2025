@@ -13,7 +13,7 @@ function cost = computeRMS(parameters)
     set_param('inerter_model/KL3_spring', 'spr_rate', num2str(b));
 
     % Run the simulation
-    simOut = sim('inerter_model.slx');
+    simOut = sim('types/inerter/inerter_model.slx');
 
      % Extract acceleration data from the simulation output
     H2631 = simOut.Z2A2631; % Access the acceleration data (timeseries object)
@@ -27,12 +27,10 @@ function cost = computeRMS(parameters)
             Kmax, Kmin, c, b, cost);
 end
 
-% Define bounds for the parameters
-lower_bounds = [10, 0.1, 0.1,1];   % [Cmax, Cmin, Damper, Spring stiffness]
-upper_bounds = [500, 10, 50,5000]; % [Cmax, Cmin, Damper, Spring stiffness]
+lower_bounds = [1000, 1000, 1, 0.1];   % [Cmax, Cmin, Spring stiffness, Inerter]
+upper_bounds = [20000, 20000, 500, 50]; % [Cmax, Cmin, Spring stiffness, Inerter]
 
-% Initial guess for the parameters
-initial_guess = [200, 5, 20, 500]; % [Cmax, Cmin, Spring stiffness, Inerter]
+initial_guess = [10000, 5000, 400, 10]; % [Cmax, Cmin, Spring stiffness, Inerter]
 
 % Set optimization options
 options = optimoptions('patternsearch', 'Display', 'iter', ...
