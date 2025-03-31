@@ -1,4 +1,6 @@
-clear all;
+%% Clean workspace
+clear all
+clc
 
 % Define the objective function
 function cost = computeRMS(parameters)

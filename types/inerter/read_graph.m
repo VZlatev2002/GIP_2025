@@ -2,12 +2,12 @@ clear all
 
 
 % load("NL1_a_100s.mat", 'Ms_acc');
-load("types/KL3_a.mat","Ms_acc")
+load("types/inerter/KL3_a.mat","Ms_acc")
 time = Ms_acc.Time;
 acc_data = Ms_acc.Data;
 
 % load("NL1_H_100s.mat","H2631") H is the Jr
-load("types/KL3_H.mat","H2631")
+load("types/inerter/KL3_H.mat","H2631")
 H2631 = H2631.Data;
 RMS= rms(H2631);
 fprintf('Jr Value from Simulink Model: %.10f m/s^2\n', RMS);

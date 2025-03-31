@@ -8,18 +8,18 @@ function cost = computeRMS(parameters)
     Kmin = parameters(2);  % Minimum spring coefficient
     c = parameters(3);    % damping coefficient
     b = parameters(4);     % Inerter value (kg)
-    model_name = 'inerter_NL5';
+    model_name = 'inerter_NL4';
     if ~bdIsLoaded(model_name)
-        load_system(fullfile('types','inerter','inerter_NL5.slx'));
+        load_system(fullfile('types','inerter','inerter_NL4.slx'));
     end
     % Update parameters in Simulink
-    set_param('inerter_NL5/VDI/Kmax', 'constant', num2str(Kmax)); 
-    set_param('inerter_NL5/VDI/Kmin', 'constant', num2str(Kmin)); 
-    set_param('inerter_NL5/KL3_damper', 'D', num2str(c)); 
-    set_param('inerter_NL5/KL3_spring', 'spr_rate', num2str(b));
+    set_param('inerter_NL4/VDI/Kmax', 'constant', num2str(Kmax)); 
+    set_param('inerter_NL4/VDI/Kmin', 'constant', num2str(Kmin)); 
+    set_param('inerter_NL4/KL3_damper', 'D', num2str(c)); 
+    set_param('inerter_NL4/KL3_spring', 'spr_rate', num2str(b));
 
     % Run the simulation
-    simOut = sim('types/inerter/inerter_NL5.slx');
+    simOut = sim('types/inerter/inerter_NL4.slx');
 
      % Extract acceleration data from the simulation output
     H2631 = simOut.Z2A2631; % Access the acceleration data (timeseries object)

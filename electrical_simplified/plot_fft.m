@@ -1,3 +1,7 @@
+%% Clean workspace
+clear all
+clc
+
 function result = FFT_JLR1(a_sprung_ratley,STEP_SIMULATION,STEP_FREQUENCY,t1,t2)
 
 [~,index_10s]=min(abs(a_sprung_ratley(:,1)-t1));
@@ -66,7 +70,7 @@ function result = findFFT(model_name)
     
     RMS = rms(filtered_acceleration);
 
-    fprintf('Jr Value from Simulink Model (%s): %.2f m/s^2\n', model_name, RMS);
+ %   fprintf('Jr Value from Simulink Model (%s): %.2f m/s^2\n', model_name, RMS);
     your_acceleration_data = [tsimnew,msanew];
     
     % Process primary and secondary ride frequency ranges
