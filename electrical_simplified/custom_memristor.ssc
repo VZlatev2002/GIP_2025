@@ -1,0 +1,78 @@
+component custom_memristor < foundation.electrical.branch
+% CUSTOM_MEMRISTOR
+% Adaptive Voltage Threshold Memristor (AVTM) model
+%
+% This simplified version avoids advanced variable attributes
+% to ensure compatibility with older Simscape syntax.
+
+%% PARAMETERS
+parameters
+    Roff = {550, 'Ohm'};       % Maximum (off) resistance
+    Ron  = {175, 'Ohm'};       % Minimum (on) resistance
+    
+    % For proper unit consistency, use '1/(A*s)' so that (a1 * i) is dimensionless
+    a1   = {2500, '1/(A*s)'};  % Rate constant for v >= 0
+    a2   = {3000, '1/(A*s)'};  % Rate constant for v < 0
+
+    b1   = {0,     '1'};       % Offset for v >= 0
+    b2   = {0.005, '1'};       % Offset for v < 0
+    
+    uon  = {0.7,  'V'};        % Positive voltage scaling
+    uoff = {-0.9, 'V'};        % Negative voltage scaling
+    
+    k1   = {25,  '1'};         % Exponent for v >= 0
+    k2   = {100, '1'};         % Exponent for v < 0
+    
+    p1   = {3.8, '1'};         % Window exponent for i >= 0
+    p2   = {15,  '1'};  
+    k0 =   {0, '1'};          % State A fraction at t=0
+% Window exponent for i < 0
+end
+
+%% VARIABLES
+% Use v as the across variable, i as the through variable.
+% Provide initial values and units in braces.
+variables (Access=private)
+    k                = {value = k0, priority=priority.high};  % State variable in [0,1] (initially 0.5)
+    power_dissipated = {0,   'W'};  % Power dissipated by the memristor
+end
+
+%% EQUATIONS
+equations
+
+    % 1) Check parameter validity
+    assert(Roff > Ron, 'Roff must be greater than Ron.');
+    assert(k0 >= 0 && k0 <= 1, 'k0 must remain in [0,1].');
+
+    let
+        % 2) Memristor resistance as a function of k
+        R = Roff - k * (Roff - Ron);
+    
+        % 3) Nonlinear function h_u(v): piecewise for positive vs. negative voltage
+        h_u = (v >= 0)*((v / uon)^k1) + ...
+              (v <  0)*((v / uoff)^k2);
+    
+        % 4) Window function f_k(k): 
+        %    - If i >= 0, (1 - k)^p1 
+        %    - If i <  0, (k)^p2
+        f_k = (i >= 0)*(abs((1 - k))^p1) + ...
+              (i <  0)*(k^p2);
+    in
+        % 5) Voltage-current relation
+        v == i * R;
+    
+        % 6) State variable derivative
+        %    k.der has units of 1/s because:
+        %    a1 or a2 is in 1/(A*s), multiplied by i (in A) => dimensionless,
+        %    multiplied by (h_u + b1 or b2) and f_k => dimensionless,
+        %    so final result is 1/s.
+        k.der == (v >= 0)*( a1*(h_u + b1)*i*f_k ) + ...
+                 (v <  0)*( a2*(h_u + b2)*i*f_k );
+    end
+    
+    % 7) Power dissipation
+    power_dissipated == i * v;
+
+end
+
+end

@@ -1,0 +1,21 @@
+% Load voltage and current data from .mat files
+voltageData = load('voltage.mat'); % Load voltage data
+currentData = load('current.mat'); % Load current data
+
+% Extract the timeseries object and convert it to numeric arrays
+voltage = voltageData.voltag; % Extract numeric voltage values
+current = currentData.current[2]; % Extract numeric current values
+
+% Plot the I-V curve
+figure;
+plot(-voltage, current, 'LineWidth', 1.5);
+xlabel('Voltage (V)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Current (I)', 'FontSize', 12, 'FontWeight', 'bold');
+title('I-V Characteristics of the Memristor', 'FontSize', 14, 'FontWeight', 'bold');
+grid on;
+set(gca, 'FontSize', 12, 'LineWidth', 1.5);
+
+% Save the figure
+saveas(gcf, 'IV_Curve.png'); % Save plot as image file
+
+disp('I-V Curve plotted and saved as IV_Curve.png');

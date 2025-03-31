@@ -68,8 +68,7 @@ function result = findFFT(model_name)
     
     filtered_acceleration = lsim(tf([50 500], [1, 50, 1200]), msanew, tsimnew);
     
-    RMS = rms(filtered_acceleration);
-
+    RMS = rms(filtered_acceleration); 
  %   fprintf('Jr Value from Simulink Model (%s): %.2f m/s^2\n', model_name, RMS);
     your_acceleration_data = [tsimnew,msanew];
     
