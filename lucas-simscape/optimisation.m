@@ -1,11 +1,15 @@
 
 function cost = computeRMS(parameter_vals, parameter_names, model_name)
-
+    load_system(model_name)
     for n = 1:height(parameter_names)
         set_param(parameter_names(n,1), parameter_names(n,2), num2str(parameter_vals(n)));
     end
-
-    simOut = sim(model_name);
+    try
+        simOut = sim(model_name);
+    catch
+        cost = 999;
+        return
+    end
     time_interp = linspace(0, simOut.acceleration.Time(end), 10000);
     
     acceleration_interp = interp1(simOut.acceleration.Time, simOut.acceleration.Data, time_interp);
@@ -20,34 +24,71 @@ function cost = computeRMS(parameter_vals, parameter_names, model_name)
     text = join(["RMS :", cost]);
     disp(text)
     disp(' ')
-    
+    close_system(model_name, 0)
 end
 
+function optimal_params = mL0_optimise()
+    lower_bounds = [1];
+    upper_bounds = [8000];
+    initial_guess = [1000];
+    parameter_names = ["mL0/damper", 'D'];
+    model_name = 'mL0';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3,  'UseParallel',true);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
 
-function L0_optimise()
+function optimal_params = mNL0_optimise()
+    lower_bounds = [500, 1];
+    upper_bounds = [1000, 50];
+    initial_guess = [750, 25];
+    parameter_names = ["mNL0/c_max", 'constant';
+                        "mNL0/c_min", 'constant'];
+    model_name = 'mNL0';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
+
+function optimal_params = mL1_optimise()
+    lower_bounds = [1, 5000, 1];
+    upper_bounds = [1500, 15000, 250];
+    initial_guess = [600, 10000, 50];
+    parameter_names = ["mL1/damper", 'D';
+                        "mL1/spring", 'spr_rate';
+                        "mL1/inerter", 'B'];
+    model_name = 'mL1';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3,  'UseParallel',true);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
+
+function optimal_params = mNL1_optimise()
+    lower_bounds = [1, 1, 5000, 1];
+    upper_bounds = [1500, 400, 15000, 200];
+    initial_guess = [600, 50, 10000, 50];
+    parameter_names = ["mNL1/c_max", 'constant';
+                        "mNL1/c_min", 'constant';
+                        "mNL1/spring", 'spr_rate';
+                        "mNL1/Translational Inerter", 'B'];
+    model_name = 'mNL1';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
+
+function optimal_params = L0_optimise()
     lower_bounds = [0.79];
     upper_bounds = [30];
     initial_guess = [20];
     parameter_names = ["L0/orifice1", "restriction_area"];
     model_name = 'L0';
     f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
-function L0_optimise_mechanical()
-    lower_bounds = [280];
-    upper_bounds = [8000];
-    initial_guess = [4000];
-    parameter_names = ["L0_mechanical/damper", 'D'];
-    model_name = 'L0_mechanical';
-    f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
-    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
-end
-
-%NL0 optimisation
-function NL0_optimise()
+function optimal_params = NL0_optimise()
     lower_bounds = [0.79, 0.79];
     upper_bounds = [30, 100];
     initial_guess = [4, 80];
@@ -55,23 +96,11 @@ function NL0_optimise()
                         "NL0/orifice2", "restriction_area"];
     model_name = 'NL0';
     f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
-function NL0_optimise_mechanical()
-    lower_bounds = [0, 0];
-    upper_bounds = [8000, 8000];
-    initial_guess = [4000, 30];
-    parameter_names = ["NL0_mechanical/c_max", 'constant';
-                        "NL0_mechanical/c_min", 'constant'];
-    model_name = 'NL0_mechanical';
-    f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
-    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
-end
-
-function L1_optimise()
+function optimal_params = L1_optimise()
     lower_bounds = [0.79, 0.1, 100];
     upper_bounds = [30, 10, 15000];
     initial_guess = [10.5, 3, 5000];
@@ -80,22 +109,38 @@ function L1_optimise()
                         "L1/spring", "spr_rate"];
     model_name = 'L1';
     f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
-function NL1_optimise()
-    lower_bounds = [0.79, 0.79, 0.1, 100];
-    upper_bounds = [30, 50, 10, 15000];
-    initial_guess = [10.5, 25, 3, 5000];
+function optimal_params = NL1_optimise()
+    lower_bounds = [0.79, 0.1, 12000];
+    upper_bounds = [3, 5, 13000];
+    initial_guess = [1.5, 2, 12500];
     parameter_names = ["NL1/orifice1", "restriction_area";
-                        "NL1/orifice2", "restriction_area";
                         "NL1/pipe", "length";
                         "NL1/spring", "spr_rate"];
     model_name = 'NL1';
     f = @(x)computeRMS(x,parameter_names, model_name);
-    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
     [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
 end
 
-NL1_optimise
+
+function optimal_params = NL0_optimise_parasitic()
+    lower_bounds = [0.79];
+    upper_bounds = [40];
+    initial_guess = [20];
+    parameter_names = ["NL0_parasitic/orifice1", "restriction_area"];
+    model_name = 'NL0_parasitic';
+    f = @(x)computeRMS(x,parameter_names, model_name);
+    options = optimoptions('patternsearch', 'Display', 'iter', 'UseCompletePoll', true, 'UseCompleteSearch', true, 'PollMethod','GPSPositiveBasis2N', 'MeshTolerance',1e-3, 'UseParallel',true);
+    [optimal_params, optimal_rms] = patternsearch(f, initial_guess, [], [], [], [], lower_bounds, upper_bounds, [], options);
+end
+
+bdclose('all')
+
+NL0_parasitic_params = NL0_optimise_parasitic();
+% mNL0_params = mNL0_optimise();
+% mL1_params = mL1_optimise();
+%mNL1_params = mNL1_optimise();

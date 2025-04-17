@@ -40,42 +40,46 @@ end
 
 function result = findFFT(model_name)
 
-    % load("NL1_a_100s.mat", 'Ms_acc');
-    simOut = sim(model_name);
-    load("a.mat","ans");
-    time = ans.Time;
-    acc_data = ans.Data;
-    
-    
-    % % load("NL1_H_100s.mat","H2631") H is the Jr
-    % load("VDDNL0_H.mat","H2631")
-    % H2631 = H2631.Data;
-    % RMS= rms(H2631);
-    % fprintf('Jr Value from Simulink Model: %.10f m/s^2\n', RMS);
 
-    % Simulation Parameters
+    
+   
+    % Creating time data
     STEP_SIMULATION = 0.0001; % Time step
     STEP_FREQUENCY = 0.1;   % Frequency resolution
-    t1 = 0;  % Start time for FFT
-    t2 = 100; % End time for FFT
     
-    tsimnew=[time(1):STEP_SIMULATION:time(end)]'; % to make a constant time step
-    msanew=interp1(time,acc_data,tsimnew); 
     
-    filtered_acceleration = lsim(tf([50 500], [1, 50, 1200]), msanew, tsimnew);
+    % Running model
+    simOut = sim(model_name);
     
-    RMS = rms(filtered_acceleration);
+    
 
-    fprintf('Jr Value from Simulink Model (%s): %.2f m/s^2\n', model_name, RMS);
-    your_acceleration_data = [tsimnew,msanew];
+    % Loading Sprung mass acceleration data
+    load("acceleration.mat","ans");
+    time = [ans.Time(1):STEP_SIMULATION:ans.Time(end)]'; % Constant time step
+    
+    As = interp1(ans.Time, ans.Data, time); % Interpolated Sprung mass acceleration
+    
+
+    % Loading Tyre Force acceleration data
+    load("tire_force.mat","ans");
+    Ft = interp1(ans.Time, ans.Data, time); % Interpolated Tire Force
+
+
+
+    As_filtered = lsim(tf([50 500], [1, 50, 1200]), As, time); %Acceleration sent through transfer function
+    
+    As_RMS = rms(As_filtered);
+    Ft_RMS = rms(Ft);
+
+    fprintf('Jr Value from Simulink Model (%s): %.3f m/s^2\n', model_name, As_RMS);
+    fprintf('Jf Value from Simulink Model (%s): %.2f m/s^2\n', model_name, Ft_RMS);
+    
+    As_data = [time, As];
     
     % Process primary and secondary ride frequency ranges
-    FFT_primary = FFT_JLR1(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
-    FFT_secondary = FFT_JLR2(your_acceleration_data, STEP_SIMULATION, STEP_FREQUENCY, t1, t2);
-    
-    
+    FFT_primary = FFT_JLR1(As_data, STEP_SIMULATION, STEP_FREQUENCY, time(1), time(end));
+    FFT_secondary = FFT_JLR2(As_data, STEP_SIMULATION, STEP_FREQUENCY, time(1), time(end));
     FFT_msa_k(:,:)=FFT_primary;
-    
     Lm1=length(FFT_primary);
     Lm2=length(FFT_secondary);
     FFT_msa_k(Lm1+1:Lm1+Lm2,1:2)=FFT_secondary;
@@ -84,18 +88,20 @@ function result = findFFT(model_name)
 end
 
 
-clear all
+% clear all
 
-resultL0 = findFFT('L0.slx');
-%resultL0_mechanical = findFFT('L0_mechanical.slx');
+% resultL0 = findFFT('mL0.slx');
+% resultNL0 = findFFT('mNL0.slx');
+% resultL1 = findFFT('mL1.slx');
+% resultNL1 = findFFT('mNL1.slx');
 
-resultNL0 = findFFT('NL0.slx');
-%resultNL0_mechanical = findFFT('NL0_mechanical.slx');
+resultNL0_hydraulic = findFFT('NL0.slx');
+resultNL0_hydraulic_parasitic =  findFFT('NL0_parasitic.slx');
 
-resultL1 = findFFT('L1.slx');
-resultNL1 = findFFT('NL1.slx');
+
+% Plot the FFT result
+
 % 
-% % Plot the FFT result
 % figure(1);
 % plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'red'); hold on;
 % plot(resultL0_mechanical(:,1),resultL0_mechanical(:,2),'LineWidth',2, 'Color', 'magenta'); hold on;
@@ -109,10 +115,27 @@ resultNL1 = findFFT('NL1.slx');
 % legend('NL0 Hydraulic', 'NL0 Mechanical');
 % hold off;
 
-figure(3);
-plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
-plot(resultL1(:,1),resultL1(:,2),'LineWidth',2, 'Color', "#D95319"); hold on;
-plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color','red' );hold on;
-plot(resultNL1(:,1),resultNL1(:,2),'LineWidth',2, 'Color', 'black' ); hold on;
-legend('L0 Hydraulic', 'NL0 Hydraulic', 'L1 Hydraulic', 'NL1 Hydraulic');
+% figure(3);
+% plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
+% plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color','red' );hold on;
+% plot(resultL1(:,1),resultL1(:,2),'LineWidth',2, 'Color', "#D95319"); hold on;
+% plot(resultNL1(:,1),resultNL1(:,2),'LineWidth',2, 'Color', 'black' ); hold on;
+% 
+% xlabel('Frequency (Hz)')
+% ylabel('J_r (ms^{-2})')
+% 
+% legend('L0', 'NL0', 'L1', 'NL1');
+% % saveas(gcf,'Jr_performance_mechanical.png');
+% hold off;
+
+
+figure(6);
+plot(resultNL0_hydraulic(:,1),resultNL0_hydraulic(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
+plot(resultNL0_hydraulic_parasitic(:,1),resultNL0_hydraulic_parasitic(:,2),'LineWidth',2, 'Color','red' );hold on;
+
+xlabel('Frequency (Hz)')
+ylabel('J_r (ms^{-2})')
+
+legend('L0', 'NL0', 'L1', 'NL1');
+% saveas(gcf,'Jr_performance_mechanical.png');
 hold off;
