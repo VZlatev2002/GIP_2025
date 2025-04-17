@@ -9,8 +9,8 @@ function cost = computeRMS(parameters)
     R_B = parameters(2);  % High resistance state (OFF)
 
     % Update parameters in Simulink (Memristor resistance values)
-    set_param('new_electrical/memristor', 'Ra', num2str(R_A)); 
-    set_param('new_electrical/memristor', 'Rb', num2str(R_B));
+    set_param('new_electrical/custom_memristor', 'Roff', num2str(R_A)); 
+    set_param('new_electrical/custom_memristor', 'Ron', num2str(R_B));
 
     % Run the simulation
     simOut = sim('new_electrical.slx');
@@ -27,16 +27,16 @@ function cost = computeRMS(parameters)
 end
 
 % Define bounds for the parameters
-lower_bounds = [10, 1];      % [Min resistance (Ω), Max resistance (Ω)]
-upper_bounds = [100, 10];   % [Min resistance (Ω), Max resistance (Ω)]
+lower_bounds = [10, 10];      % [Min resistance (Ω), Max resistance (Ω)]
+upper_bounds = [100, 20];   % [Min resistance (Ω), Max resistance (Ω)]
 
 % Initial guess for the parameters
-initial_guess = [50, 5];  % [R_A (low), R_B (high)]
+initial_guess = [50, 15];  % [R_A (low), R_B (high)]
 
 % Set optimization options
 options = optimoptions('patternsearch', 'Display', 'iter', ...
-    'UseCompletePoll', true, 'UseCompleteSearch', true, ...
-    'PollMethod', 'GPSPositiveBasis2N', 'MeshTolerance', 1e-3);
+        'UseCompletePoll', true, 'UseCompleteSearch', true, ...
+        'PollMethod', 'GPSPositiveBasis2N', 'MeshTolerance', 1e-3);
 
 % Run the optimization using pattern search
 [optimal_params, optimal_rms] = patternsearch(@computeRMS, initial_guess, [], [], [], [], ...
@@ -45,7 +45,7 @@ options = optimoptions('patternsearch', 'Display', 'iter', ...
 % Extract optimized values
 optimal_R_A = optimal_params(1);
 optimal_R_B = optimal_params(2);
-
+    
 % Display results
 fprintf('\n====== Optimal Parameters for new_electrical ======\n');
 fprintf('Optimal R_A: %.2f Ω\n', optimal_R_A);
@@ -54,5 +54,5 @@ fprintf('Minimum RMS Acceleration: %.10f m/s^2\n', optimal_rms);
 fprintf('===================================================\n');
 
 % Update the Simulink model with the optimized values
-set_param('new_electrical/memristor', 'Ra', num2str(optimal_R_A));
-set_param('new_electrical/memristor', 'Rb', num2str(optimal_R_B));
+set_param('new_electrical/custom_memristor', 'Roff', num2str(optimal_R_A));
+set_param('new_electrical/custom_memristor', 'Ron', num2str(optimal_R_B));

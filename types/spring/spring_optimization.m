@@ -3,11 +3,7 @@ clear all
 clc
 warning('off','all')
 
-%% Load Simulink model explicitly before optimization
-model_name = 'spring_NL4';
-if ~bdIsLoaded(model_name)
-    load_system(fullfile('types','spring','spring_NL4.slx'));
-end
+
 
 %% Define the objective function
 function cost = computeRMS(parameters)
@@ -18,16 +14,16 @@ function cost = computeRMS(parameters)
     b    = parameters(4);  % Inerter value (kg)
 
     % Ensure model is loaded
-    model_name = 'spring_NL4';
+    model_name = 'spring_NL3';
     if ~bdIsLoaded(model_name)
-        load_system(fullfile('types','spring','spring_NL4.slx'));
+        load_system(fullfile('types','spring','spring_NL3.slx'));
     end
 
     % Update parameters in Simulink
-    set_param('spring_NL4/VDS/Kmax',        'constant', num2str(Kmax)); 
-    set_param('spring_NL4/VDS/Kmin',        'constant', num2str(Kmin)); 
-    set_param('spring_NL4/KL3_damper',      'D',        num2str(c)); 
-    set_param('spring_NL4/KL3_inerter',     'B',        num2str(b));
+    set_param('spring_NL3/VDS/Kmax',        'constant', num2str(Kmax)); 
+    set_param('spring_NL3/VDS/Kmin',        'constant', num2str(Kmin)); 
+    set_param('spring_NL3/KL3_damper',      'D',        num2str(c)); 
+    set_param('spring_NL3/KL3_inerter',     'B',        num2str(b));
 
     % Run the simulation
     simOut = sim(model_name);

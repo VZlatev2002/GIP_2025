@@ -6,28 +6,24 @@ currentData = load('rlc-simple/current.mat');
 voltage = voltageData.voltage(2, :);
 current = currentData.current(2, :);
 
-% Create a new figure
 figure;
 
-% --- Subplot 1: Scatter Plot ---
-subplot(1, 2, 1);  % 1 row, 2 columns, use the first cell
-scatter(-voltage, current, 10, 'b', 'filled');  % Negative voltage if desired
-xlabel('Voltage (V)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Current (A)', 'FontSize', 12, 'FontWeight', 'bold');
-title('Scatter Plot', 'FontSize', 14, 'FontWeight', 'bold');
-grid on;
-set(gca, 'FontSize', 12, 'LineWidth', 1.5);
-
-% --- Subplot 2: Continuous Line Plot ---
-subplot(1, 2, 2);  % Still the same figure, second cell
+% Plot the data
 plot(-voltage, current, 'LineWidth', 1.5);
+
+% Set axis labels and title
 xlabel('Voltage (V)', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Current (A)', 'FontSize', 12, 'FontWeight', 'bold');
-title('Line Plot', 'FontSize', 14, 'FontWeight', 'bold');
-grid on;
-set(gca, 'FontSize', 12, 'LineWidth', 1.5);
+title('Current-Voltage Characteristics', 'FontSize', 14, 'FontWeight', 'bold');
 
-% Save the entire figure as an image
-saveas(gcf, 'IV_Curve_TwoSubplots.png');
+% Remove the box around the plot
+ax = gca;
+ax.Box = 'off'; % Turn off the box
 
-disp('Scatter and continuous line plots created on two separate axes, saved as IV_Curve_TwoSubplots.png');
+% Optionally, you can set the line width of the axes
+ax.XAxis.LineWidth = 1.5;
+ax.YAxis.LineWidth = 1.5;
+
+
+% Set axis properties
+set(gca, 'FontSize', 12);

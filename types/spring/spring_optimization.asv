@@ -1,12 +1,9 @@
 %% Clean workspace
 clear all
 clc
+warning('off','all')
 
-%% Load Simulink model explicitly before optimization
-model_name = 'spring_NL4';
-if ~bdIsLoaded(model_name)
-    load_system(fullfile('types','spring','spring_NL4.slx'));
-end
+
 
 %% Define the objective function
 function cost = computeRMS(parameters)
@@ -17,16 +14,16 @@ function cost = computeRMS(parameters)
     b    = parameters(4);  % Inerter value (kg)
 
     % Ensure model is loaded
-    model_name = 'spring_NL4';
+    model_name = 'spring_NL3';
     if ~bdIsLoaded(model_name)
-        load_system(fullfile('types','spring','spring_NL4.slx'));
+        load_system(fullfile('types','spring','spring_NL6.slx'));
     end
 
     % Update parameters in Simulink
-    set_param('spring_NL4/VDS/Kmax',        'constant', num2str(Kmax)); 
-    set_param('spring_NL4/VDS/Kmin',        'constant', num2str(Kmin)); 
-    set_param('spring_NL4/KL3_damper',      'D',        num2str(c)); 
-    set_param('spring_NL4/KL3_inerter',     'B',        num2str(b));
+    set_param('spring_NL6/VDS/Kmax',        'constant', num2str(Kmax)); 
+    set_param('spring_NL6/VDS/Kmin',        'constant', num2str(Kmin)); 
+    set_param('spring_NL6/KL3_damper',      'D',        num2str(c)); 
+    set_param('spring_NL6/KL3_inerter',     'B',        num2str(b));
 
     % Run the simulation
     simOut = sim(model_name);
@@ -47,7 +44,7 @@ lower_bounds = [100, 10,   1,   0.1];   % [Kmax, Kmin, c, b]
 upper_bounds = [20000, 20000, 500, 100];    % [Kmax, Kmin, c, b]
 
 %% Initial guess for the parameters
-initial_guess = [100, 50, 300, 50];    % [Kmax, Kmin, c, b]
+initial_guess = [19000, 1900, 300, 50];    % [Kmax, Kmin, c, b]
 
 %% Optimization options (without parallel execution)
 options = optimoptions('patternsearch', ...
@@ -76,7 +73,7 @@ fprintf('Optimal Inerter: %.2f kg\n', optimal_b);
 fprintf('Minimum RMS Acceleration: %.6f m/s^2\n', optimal_rms);
 
 %% Update final Simulink model with optimized parameters
-set_param('spring_NL3/VDS/Kmax',        'constant', num2str(optimal_Kmax)); 
-set_param('spring_NL3/VDS/Kmin',        'constant', num2str(optimal_Kmin)); 
-set_param('spring_NL3/KL3_damper',      'D',        num2str(optimal_c));
-set_param('spring_NL3/KL3_inerter',     'B',        num2str(optimal_b));
+set_param('spring_NL6/VDS/Kmax',        'constant', num2str(optimal_Kmax)); 
+set_param('spring_NL6/VDS/Kmin',        'constant', num2str(optimal_Kmin)); 
+set_param('spring_NL6/KL3_damper',      'D',        num2str(optimal_c));
+set_param('spring_NL6/KL3_inerter',     'B',        num2str(optimal_b));
