@@ -1,0 +1,2 @@
+delta_k = 0 - RMS(0.404), MEAN(0.0996), VAR(0.0091)
+delta_k = +10% - RMS(0.429), MEAN(0.), VAR(0.)
