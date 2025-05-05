@@ -40,9 +40,6 @@ end
 
 function result = findFFT(model_name)
 
-
-    
-   
     % Creating time data
     STEP_SIMULATION = 0.0001; % Time step
     STEP_FREQUENCY = 0.1;   % Frequency resolution
@@ -88,54 +85,20 @@ function result = findFFT(model_name)
 end
 
 
-% clear all
+resultHNL0 = findFFT('HNL0.slx');
 
-% resultL0 = findFFT('mL0.slx');
-% resultNL0 = findFFT('mNL0.slx');
-% resultL1 = findFFT('mL1.slx');
-% resultNL1 = findFFT('mNL1.slx');
-
-resultNL0_hydraulic = findFFT('NL0.slx');
-resultNL0_hydraulic_parasitic =  findFFT('NL0_parasitic.slx');
+resultHNL1 = findFFT('HNL1.slx');
 
 
-% Plot the FFT result
 
-% 
-% figure(1);
-% plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'red'); hold on;
-% plot(resultL0_mechanical(:,1),resultL0_mechanical(:,2),'LineWidth',2, 'Color', 'magenta'); hold on;
-% legend('L0 Hydraulic', 'L0 Mechanical');
-% hold off;
-% 
-% 
-% figure(2);
-% plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color', 'blue');hold on;
-% plot(resultNL0_mechanical(:,1),resultNL0_mechanical(:,2),'LineWidth',2, 'Color', 'green'); hold on;
-% legend('NL0 Hydraulic', 'NL0 Mechanical');
-% hold off;
+figure(7);
+plot(resultHNL0(:,1),resultHNL0(:,2),'LineWidth',2, 'Color','blue' );hold on;
 
-% figure(3);
-% plot(resultL0(:,1),resultL0(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
-% plot(resultNL0(:,1),resultNL0(:,2),'LineWidth',2, 'Color','red' );hold on;
-% plot(resultL1(:,1),resultL1(:,2),'LineWidth',2, 'Color', "#D95319"); hold on;
-% plot(resultNL1(:,1),resultNL1(:,2),'LineWidth',2, 'Color', 'black' ); hold on;
-% 
-% xlabel('Frequency (Hz)')
-% ylabel('J_r (ms^{-2})')
-% 
-% legend('L0', 'NL0', 'L1', 'NL1');
-% % saveas(gcf,'Jr_performance_mechanical.png');
-% hold off;
-
-
-figure(6);
-plot(resultNL0_hydraulic(:,1),resultNL0_hydraulic(:,2),'LineWidth',2, 'Color', 'blue'); hold on;
-plot(resultNL0_hydraulic_parasitic(:,1),resultNL0_hydraulic_parasitic(:,2),'LineWidth',2, 'Color','red' );hold on;
+plot(resultHNL1(:,1),resultHNL1(:,2),'LineWidth',2, 'Color','red' );hold on;
 
 xlabel('Frequency (Hz)')
-ylabel('J_r (ms^{-2})')
+ylabel('Filtered RMS acceleration (ms^{-1})')
 
-legend('L0', 'NL0', 'L1', 'NL1');
+legend('HNL1', 'NL1');
 % saveas(gcf,'Jr_performance_mechanical.png');
 hold off;
